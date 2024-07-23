@@ -15,12 +15,16 @@ describe('prepareGatewayDocument', () => {
   ];
   const userSchema = makeExecutableSchema({
     typeDefs: /* GraphQL */ `
+      type UserError {
+        message: String!
+      }
       type User {
         id: ID!
         name: String!
       }
+      union UserUnion = User | UserError
       type Query {
-        userById(id: ID!): User
+        userById(id: ID!): UserUnion
       }
     `,
     resolvers: {
@@ -28,7 +32,9 @@ describe('prepareGatewayDocument', () => {
         userById: (_root, { id }) => {
           const foundUser = users.find(user => user.id === id);
           if (!foundUser) {
-            return null;
+            return {
+              message: 'error'
+            };
           }
           return {
             id: foundUser.id,
